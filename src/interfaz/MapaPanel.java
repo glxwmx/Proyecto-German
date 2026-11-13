@@ -1,6 +1,7 @@
 
 package interfaz;
 
+import estructura.ResultadoRuta;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -15,6 +16,7 @@ public class MapaPanel extends JPanel {
     private Marcador origen;
     private Marcador destino;
 
+    private ResultadoRuta rutaCalculada;
     private int mapaX;
     private int mapaY;
     private int mapaAncho;
@@ -41,14 +43,59 @@ public class MapaPanel extends JPanel {
             }
         });
     }
+    
+    public void setRuta(ResultadoRuta ruta) {
+        this.rutaCalculada = ruta;
+        repaint();
+    }
+    
+    private Marcador buscarMarcador(String id) {
 
+        for (Marcador marcador : marcadores) {
+
+            if (marcador.id.equals(id)) {
+                return marcador;
+            }
+        }
+
+        return null;
+    }
+    private void dibujarRuta(Graphics2D g2) {
+
+        if (rutaCalculada == null) {
+                return;
+        }
+
+        ArrayList<modelo.Lugar> lugares = rutaCalculada.getRuta();
+
+        g2.setColor(Color.ORANGE);
+        g2.setStroke(new BasicStroke(5,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
+
+        for (int i = 0; i < lugares.size() - 1; i++) {
+
+            Marcador primero = buscarMarcador(lugares.get(i).getId());
+
+            Marcador segundo = buscarMarcador(lugares.get(i + 1).getId());
+
+            if (primero != null && segundo != null) {
+
+                int x1 = mapaX + primero.x * mapaAncho / 1027;
+                int y1 = mapaY + primero.y * mapaAlto / 510;
+
+                int x2 = mapaX + segundo.x * mapaAncho / 1027;
+                int y2 = mapaY + segundo.y * mapaAlto / 510;
+
+                g2.drawLine(x1, y1, x2, y2);
+            }
+        }
+    }
     private void agregarMarcadores() {
 
-        marcadores.add(new Marcador("casetaEst",
-                "Caseta de vigilancia del estacionamiento", 522, 84));
-
         marcadores.add(new Marcador("casetaPrincipal",
-                "Caseta de vigilancia de la puerta principal", 659, 88));
+            "Caseta de vigilancia de la puerta principal", 522, 84));
+
+        marcadores.add(new Marcador("casetaEst",
+            "Caseta de vigilancia del estacionamiento", 659, 88));
 
         marcadores.add(new Marcador("estacionamiento",
                 "Estacionamiento", 772, 145));
@@ -84,13 +131,13 @@ public class MapaPanel extends JPanel {
                 "Edificio E", 452, 364));
 
         marcadores.add(new Marcador("cafeteria",
-                "Cafeteria", 557, 364));
+                "Cafeteria", 491, 421));
 
         marcadores.add(new Marcador("futbol",
                 "Cancha de Futbol", 735, 344));
 
         marcadores.add(new Marcador("tics",
-                "Edificio de TICS", 491, 421));
+                "Edificio de TICS", 557, 364));
 
         marcadores.add(new Marcador("audPrincipal",
                 "Auditorio Principal", 338, 387));
@@ -127,7 +174,7 @@ public class MapaPanel extends JPanel {
             }
         }
     }
-
+    
     @Override
     protected void paintComponent(Graphics g) {
 
@@ -157,7 +204,9 @@ public class MapaPanel extends JPanel {
                 mapaAlto,
                 this
         );
-
+        
+        dibujarRuta(g2);
+        
         for (Marcador marcador : marcadores) {
 
             int x = mapaX + marcador.x * mapaAncho / 1027;
